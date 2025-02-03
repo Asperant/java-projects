@@ -15,6 +15,7 @@ public class Notebook {
     public static void main(String[] args){
         loadNotes();
         Scanner scanner = new Scanner(System.in);
+
         while(true){
             System.out.println("\n==== NotePad ====");
             System.out.println("1. Add New Note");
@@ -25,6 +26,7 @@ public class Notebook {
             System.out.println("6. Search Notes");
             System.out.println("7. List Notes by Category");
             System.out.println("8. Exit");
+            System.out.print("Enter Your Choice: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
 
@@ -62,6 +64,7 @@ public class Notebook {
     private static void addNote(Scanner scanner){
         System.out.println("Enter Note Title: ");
         String title = scanner.nextLine();
+
         if(notes.containsKey(title)){
             System.out.println("This title already exists!");
             return ;
@@ -88,6 +91,7 @@ public class Notebook {
             return ;
         }
         System.out.println("\nSaved Notes: ");
+
         for(Map.Entry<String,JSONObject> entry : notes.entrySet()){
             System.out.println("- " + entry.getKey() + "(Created: " + entry.getValue().getString("created_at") + ", Last Updated: " + entry.getValue().getString("updated_at") + ")");
         }
@@ -96,9 +100,18 @@ public class Notebook {
     private static void viewNote(Scanner scanner){
         System.out.println("Enter the title of the note to view: ");
         String title = scanner.nextLine();
-        if(notes.containsKey(title)){
+
+        JSONObject note = notes.get(title);
+
+        if(note != null){
             System.out.println("\n=== " + title + " ===");
-            System.out.println(notes.get(title));
+
+            if(note.has("content")){
+                System.out.println(note.getString("content"));
+            }
+            else{
+                System.out.println("No content available.");
+            }
         }
         else{
             System.out.println("No note found with this title");
@@ -108,6 +121,7 @@ public class Notebook {
     private static void deleteNote(Scanner scanner){
         System.out.println("Enter the title of the note to delete: ");
         String title = scanner.nextLine();
+
         if(notes.remove(title) != null){
             saveNotes();
             System.out.println("Note deleted successfully.");
@@ -120,11 +134,16 @@ public class Notebook {
     private static void editNote(Scanner scanner){
         System.out.println("Enter the title of the note to edit: ");
         String title = scanner.nextLine();
+        
         if(notes.containsKey(title)){
             JSONObject note = notes.get(title);
             System.out.println("Enter new content: ");
             String content = scanner.nextLine();
+            System.out.println("Enter new category: ");
+            String category = scanner.nextLine();
+
             note.put("content", content);
+            note.put("category", category);
             note.put("updated_at", LocalDateTime.now().format(FORMATTER));
             saveNotes();
             System.out.println("Note updated successfully.");
@@ -136,7 +155,7 @@ public class Notebook {
 
     private static void searchNotes(Scanner scanner){
         System.out.println("Enter keyword to search in notes: ");
-        String keyword = scanner.nextLine();
+        String keyword = scanner.nextLine().toLowerCase();
         boolean found = false;
         
         for(Map.Entry<String,JSONObject> entry : notes.entrySet()){
@@ -147,7 +166,6 @@ public class Notebook {
                 found = true;
             }
         }
-        
         if(!found){
             System.out.println("No matching notes found.");
         }
@@ -164,7 +182,6 @@ public class Notebook {
                 found = true;
             }
         }
-
         if(!found){
             System.out.println("No notes found in this category");
         }
