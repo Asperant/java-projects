@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class DataHandler {
-    private static final String DATA_FILE = "data.json";
+    private static final String DATA_FILE = "data/data.json";
 
     public static JSONObject loadData(){
         File file = new File(DATA_FILE);

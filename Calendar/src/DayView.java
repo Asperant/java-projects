@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.time.LocalDate;
 
 public class DayView extends JFrame{
     private String date;
@@ -14,6 +15,7 @@ public class DayView extends JFrame{
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         initUI();
+        loadTasks();
         setVisible(true);
     }
     private void initUI(){
@@ -22,6 +24,7 @@ public class DayView extends JFrame{
         taskListModel = new DefaultListModel<>();
         taskJList = new JList<>(taskListModel);
         taskJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        taskJList.setFont(new Font("SansSerif",Font.PLAIN,14));
         JScrollPane scrollPane = new JScrollPane(taskJList);
         add(scrollPane,BorderLayout.CENTER);
 
@@ -30,6 +33,13 @@ public class DayView extends JFrame{
         JButton editButton = new JButton("Düzenle");
         JButton deleteButton = new JButton("Sil");
         JButton completeButton = new JButton("Tamamlandı");
+
+        Font binFont = new Font("SansSerif",Font.PLAIN,14);
+        addButton.setFont(binFont);
+        editButton.setFont(binFont);
+        deleteButton.setFont(binFont);
+        completeButton.setFont(binFont);
+
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
@@ -49,28 +59,35 @@ public class DayView extends JFrame{
             taskListModel.addElement(task);
         }
     }
-    private void addTask(){
-        JTextField taskField = new JTextField();
-        JTextField reminderField = new JTextField();
-        Object[] message = {
-            "Görev Metni:", taskField,
-            "Hatırlatıcı Saati (HH:mm) (Opsiyonel):", reminderField
-        };
-        int option = JOptionPane.showConfirmDialog(this,message,"Yeni Görev Ekle",JOptionPane.OK_CANCEL_OPTION);
+    private void addTask() {
+        LocalDate selectedDate = LocalDate.parse(date);
+        LocalDate today = LocalDate.now();
 
-        if(option == JOptionPane.OK_OPTION){
-            String text = taskField.getText();
-            String reminder = reminderField.getText().trim();
-
-            if(text.isEmpty()){
-                JOptionPane.showMessageDialog(this, "Görev metni boş olamaz!");
-                return ;
+        if(selectedDate.isBefore(today)) {
+            JOptionPane.showMessageDialog(this, "Geçmiş tarihlere görev eklenemez!");
+        } 
+        else{
+            JTextField taskField = new JTextField();
+            JTextField reminderField = new JTextField();
+            Object[] message = {
+                "Görev Metni:", taskField,
+                "Hatırlatıcı Saati (HH:mm) (Opsiyonel):", reminderField
+            };
+            int option = JOptionPane.showConfirmDialog(this, message, "Yeni Görev Ekle", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                String text = taskField.getText();
+                String reminder = reminderField.getText().trim();
+                if (text.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Görev metni boş olamaz!");
+                    return;
+                }
+                Task task = new Task(text, false, reminder.isEmpty() ? null : reminder);
+                TaskManager.addTask(date, task);
+                loadTasks();
             }
-            Task task = new Task(text,false,reminder.isEmpty() ? null : reminder);
-            TaskManager.addTask(date,task);
-            loadTasks();
         }
     }
+    
     private void editTask(){
         int selectedIndex = taskJList.getSelectedIndex();
 
